@@ -16,9 +16,12 @@ Thus the **E** and **B** fields are parallel and both oriented along **y** axis,
 The incident particles come towards an aperture with initial velocity oriented along **z** axis only (positive initial velocities). 
 
 The aperture can be either pointlike or non-pointlike.
+
 If selected to be non-pointlike, it can extend along **x** axis only, along **y** axis only, or along both **x** and **y** axes (so it becomes a circle).
-The extension in any of the above cases is of radius R = 0.005 m. 
-This translates to the fact that particles' initial x and y coordinates at the aperture location will vary between 0.0 m and 0.01 m (instead of being equal to 0.0 for all particles) and these coordinates values (x and y initial values) will be drawn at random, uniformly between the two extremes, independently of each other.
+
+The extension in any of the above cases is input from the user from keyboard, in SI units (meters). 
+
+This translates to the fact that particles' initial x and y coordinates at the aperture location will vary between 0.0 m and ```Rx``` for x axis, and between 0.0 m and ```Ry``` for y axis, respectively (instead of being equal to 0.0 and 0.0, for all particles) and these coordinates values (x and y initial values) will be drawn at random, with uniform probability, from the range spanning their own two extreme values (0.0 and ```Rx```, 0.0 and ```Ry```, respectively), independently of each other (x draws don't influence y draws and vice-versa).
 
 
 # Particles
