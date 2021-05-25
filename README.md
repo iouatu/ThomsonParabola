@@ -32,6 +32,7 @@ Chunks can be of the following types (at the moment):
 [proton, C0+, C1+, ... , C6+, Xe0+, Xe1+, ... , Xe54+]
 
 # Integration
+### RKF45 adaptive stepsize
 The code performs RK45 Fehlberg integration for all the input chunks, for all the particles from each chunk, in inputted `E` and `B` fields both of length `l_B`.
 The integration, for each particle, finishes when:
 1) The particle has exited the B-field region (has `z` > `l_B`)
