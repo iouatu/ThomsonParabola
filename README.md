@@ -25,11 +25,15 @@ This translates to the fact that particles' initial x and y coordinates at the a
 The incident particles are input by the user in an interactive fashion.
 They are contained in chunks. A chunk is composed of particles of the same species and can be of any size (integer number of particles in a chunk).
 A chunk is input by the user by specifying its name, its initial Kinetic Energy, the number of particles wanting to be simulated in this chunk, and the option for the aperture.
-If the option is chosen to be 1, then the particles are shot towards a purely pointlike aperture (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn from a Gaussian Distribution with mean given by the input Kinetic Energy and sigma = mean / 10.
-If the option is chosen to be 2, then the particles are shot towards a non-pointlike aperture and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
-Chunks can be of the following types (at the moment):
 
-[proton, C0+, C1+, ... , C6+, Xe0+, Xe1+, ... , Xe54+]
+If the ***option is chosen to be 1***, then the particles are shot towards a purely pointlike aperture (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn from a Gaussian Distribution with mean given by the input Kinetic Energy and sigma = mean / 10.
+
+If the ***option is chosen to be 2***, then the particles are shot towards a non-pointlike aperture and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
+
+Chunks can be of the following types (at the moment):
+```diff
+- [proton, C0+, C1+, ... , C6+, Xe0+, Xe1+, ... , Xe54+]
+```
 
 # Integration
 ### RKF45 adaptive stepsize
