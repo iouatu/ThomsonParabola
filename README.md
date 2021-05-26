@@ -7,8 +7,7 @@ The simulated geometry is as following:
 
 ![Image of ThomsonSpectrometer_MyGeometry](https://github.com/iouatu/ThomsonSpectrometer/blob/main/My_Geometry_picture.png)
 
-This design of the spectrometer can be found in **D. Jung et al., Development of a high resolution and high dispersion Thomson parabola, Review of Scientific Instruments, 2011**: 
-https://aip.scitation.org/doi/10.1063/1.3523428
+This design of the spectrometer can be found in "**D. Jung et al., Development of a high resolution and high dispersion Thomson parabola, Review of Scientific Instruments, 2011**", online at: https://aip.scitation.org/doi/10.1063/1.3523428.
 
 Thus the **E** and **B** fields are parallel and both oriented along **y** axis, in the positive direction. The fields are a top-hat shape as a function of the z-coordinate, so no fringe-fields effects are considered.
 
@@ -27,11 +26,29 @@ This translates to the fact that particles' initial x and y coordinates at the a
 # Particles
 The incident particles are input by the user in an interactive fashion.
 They are contained in chunks. A chunk is composed of particles of the same species and can be of any size (integer number of particles in a chunk).
-A chunk is input by the user by specifying its name, its initial Kinetic Energy, the number of particles wanting to be simulated in this chunk, and the option for the aperture.
+A chunk is input by the user by specifying its name, its input Kinetic Energy in MeV, the number of particles wanting to be simulated in this chunk, and the option for the aperture.
 
-If the ***option is chosen to be 1***, then the particles are shot towards a purely pointlike aperture (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn from a Gaussian Distribution with mean given by the input Kinetic Energy and sigma = mean / 10.
+#### Option 1
 
+If the ***option is chosen to be 1***, then the particles are shot towards a purely pointlike aperture (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn according to the sub-option chose.
+
+* If suboption is chosen to be 1: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
+
+* If suboption is chosen to be 2: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
+
+* If suboption is chosen to be 3 (**not supported yet**): particles' input velocities are read from an input file provided by the user.
+
+#### Option 2
 If the ***option is chosen to be 2***, then the particles are shot towards a non-pointlike aperture and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
+
+* If suboption is chosen to be 1: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
+
+* If suboption is chosen to be 2: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
+
+* If suboption is chosen to be 3 (**not supported yet**): particles' input velocities are read from an input file provided by the user.
+
+
+#### Species types
 
 Chunks can be of the following types (at the moment):
 ```diff
@@ -40,7 +57,9 @@ Chunks can be of the following types (at the moment):
 
 # Integration
 ### RKF45 adaptive stepsize
-The code performs RK45 Fehlberg integration for all the input chunks, for all the particles from each chunk, in inputted `E` and `B` fields both of length `l_B`.
+The code performs RK45 Fehlberg integration for all the input chunks, for all the particles from each chunk, in inputted `E` and `B` fields both of length `l_B`. Not-so-technical details about this integration method and sample pseudocode in Fortran can be found in "**W. Press, S. Teukolsy, Adaptive Stepsize Runge-Kutta Integration, Computers in Physics 6, 188 (1992)**" online at: https://doi.org/10.1063/1.4823060.
+
+
 The integration, for each particle, finishes when:
 1) The particle has exited the B-field region (has `z` > `l_B`)
 2) The particle has hit the bottom electrode (see geometry diagram) (has `y` > `y_bottom_elec`)
