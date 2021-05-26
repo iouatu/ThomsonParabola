@@ -200,7 +200,7 @@ def create_Species_Objects(name, mass, charge, r, velo, no_of_particles, dict_to
     return dict_to_put_in
 
 def main():
-    """ Function called at the execution of the code via $ python3 main.py
+    """ Function being called at the execution of the code via $ python3 main.py
 
     Inputs from user from keyboard:
     -------------------------------
@@ -212,7 +212,7 @@ def main():
     y_electrode_bottom : float (y coordinate of the bottom electrode. helpful to see if clipping occurs or not)
     various info about the chunks of particles : various types, see below
 
-    Returns
+    Results whoch can be used at end of script execution.
     -------------------------
     final_coords_at_detectorscreen : list of dictionaries. each dictionary represents one chunk of particles. 
                                      each dictionary contains the x,y coordinates on the detector screen for the particles from that chunk.
