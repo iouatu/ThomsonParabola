@@ -93,4 +93,4 @@ The code has been tested on **Python 3.8.5** with the following dependencies:
 
 * scipy 1.6.2
 
-Code is run via `$ cd /dir/in/which/code_is_extracted` followed by `$ python3 main.py` 
+Code is run via `$ cd /dir/in/which/code_is_extracted` followed by `$ python3 main.py`. By default, graphs are saved in `/dir/in/which/code_is_extracted`.
