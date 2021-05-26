@@ -133,66 +133,66 @@ def RK45integrator(x,y,z,ux,uy,uz,   yscal, l_B, y_bottom_elec, qonm, E, B):
     results[-1, :] : np.array shape (6, ) : the x,y,z, ux, uy, uz all in SI, at the end of the integration doen by this function.
     """
 
-        no_of_particles_which_hitelectrode = 0
-        no_of_particles_which_haveexitB = 0
-        counter = 0
-        nmax = 10**5
-        steps_accepted = 0
-        epsilon_0 = 10**(-10)
-        t = 0
-        dt = 10**(-50) # initial try for the timestep dt
-        ts = []
-        beta = 0.9
-        vec = np.array([x,y,z,  ux,uy,uz])
-        z_to_compare = 0.0 # initial z-value for the comparison used to see if we need to stop RK45 routine or not
-        y_to_compare = 0.0  # initial y-value for the comparison used to see if we need to stop RK45 routine or not
-        results = []
-        ERRCON = (beta/5.)**(5) # cryptic value taken and used as from Press and Teukolsky, 1992, Adaptive Stepsize RK Integration paper
-        #global no_of_particles_which_haveexitB 
-        #global no_of_particles_which_havehitelectrode 
-        while(counter <= nmax):
-            counter += 1 # we performed 1 iteration of the while-loop!
-            if (z_to_compare >= l_B): # free particle - flight
-                no_of_particles_which_haveexitB = no_of_particles_which_haveexitB + 1
-                break
-            if (y_to_compare >= y_bottom_elec):
-                no_of_particles_which_hitelectrode = no_of_particles_which_hitelectrode + 1
-                break
-            container_from_RKF4method = get_RKF4_approx(t, vec, dt, qonm, E, B)
-            RKF4 = container_from_RKF4method[0] # RKF4 method's approximation for the 6 odes' solutions at t_{n+1}. returns a np array of 6 floats because we have x,y,z,ux,uy,uz
-            Ks =  container_from_RKF4method[1:] # a list of 5 np arrays (K1--->K5), each np array containing 6 floats
-            RKF5 = get_RKF5_approx_efficiently(t, vec, dt, Ks, qonm, E , B) # a np.array with 6 floats in it
-            y_to_compare = RKF4[1]
-            z_to_compare = RKF4[2]
-            scaled_errors_at_this_step = [ abs( (RKF5[i] - RKF4[i]) / yscal[i] ) for i in range(3) ] # i runs from 0-->2 (including 2), only care about error on x,y,z and not on ux,uy,uz 
-            max_from_scalederrors_at_this_step = np.max(scaled_errors_at_this_step)
-            if (max_from_scalederrors_at_this_step < epsilon_0 and max_from_scalederrors_at_this_step != 0.0): # good!
-                # yes, step accepted! need optimal timestep (can increase it!)
+    no_of_particles_which_hitelectrode = 0
+    no_of_particles_which_haveexitB = 0
+    counter = 0
+    nmax = 10**5
+    steps_accepted = 0
+    epsilon_0 = 10**(-10)
+    t = 0
+    dt = 10**(-50) # initial try for the timestep dt
+    ts = []
+    beta = 0.9
+    vec = np.array([x,y,z,  ux,uy,uz])
+    z_to_compare = 0.0 # initial z-value for the comparison used to see if we need to stop RK45 routine or not
+    y_to_compare = 0.0  # initial y-value for the comparison used to see if we need to stop RK45 routine or not
+    results = []
+    ERRCON = (beta/5.)**(5) # cryptic value taken and used as from Press and Teukolsky, 1992, Adaptive Stepsize RK Integration paper
+    #global no_of_particles_which_haveexitB 
+    #global no_of_particles_which_havehitelectrode 
+    while(counter <= nmax):
+        counter += 1 # we performed 1 iteration of the while-loop!
+        if (z_to_compare >= l_B): # free particle - flight
+            no_of_particles_which_haveexitB = no_of_particles_which_haveexitB + 1
+            break
+        if (y_to_compare >= y_bottom_elec):
+            no_of_particles_which_hitelectrode = no_of_particles_which_hitelectrode + 1
+            break
+        container_from_RKF4method = get_RKF4_approx(t, vec, dt, qonm, E, B)
+        RKF4 = container_from_RKF4method[0] # RKF4 method's approximation for the 6 odes' solutions at t_{n+1}. returns a np array of 6 floats because we have x,y,z,ux,uy,uz
+        Ks =  container_from_RKF4method[1:] # a list of 5 np arrays (K1--->K5), each np array containing 6 floats
+        RKF5 = get_RKF5_approx_efficiently(t, vec, dt, Ks, qonm, E , B) # a np.array with 6 floats in it
+        y_to_compare = RKF4[1]
+        z_to_compare = RKF4[2]
+        scaled_errors_at_this_step = [ abs( (RKF5[i] - RKF4[i]) / yscal[i] ) for i in range(3) ] # i runs from 0-->2 (including 2), only care about error on x,y,z and not on ux,uy,uz 
+        max_from_scalederrors_at_this_step = np.max(scaled_errors_at_this_step)
+        if (max_from_scalederrors_at_this_step < epsilon_0 and max_from_scalederrors_at_this_step != 0.0): # good!
+            # yes, step accepted! need optimal timestep (can increase it!)
+            steps_accepted += 1
+            ts.append(t)
+            dt_new = beta * dt * (epsilon_0/max_from_scalederrors_at_this_step)**(0.25) 
+            if (max_from_scalederrors_at_this_step <= (ERRCON * epsilon_0)): # fractional error is not that small, can increase timestep according to the found optimal value
+                dt_new = 5 * dt
+            dt = dt_new
+            results.append(RKF4)
+            vec = RKF4 # for next iteration of the while-loop
+        else:
+            if (max_from_scalederrors_at_this_step == 0.0): # it's perfect!
                 steps_accepted += 1
                 ts.append(t)
-                dt_new = beta * dt * (epsilon_0/max_from_scalederrors_at_this_step)**(0.25) 
-                if (max_from_scalederrors_at_this_step <= (ERRCON * epsilon_0)): # fractional error is not that small, can increase timestep according to the found optimal value
-                    dt_new = 5 * dt
+                t += dt
+                dt_new = 10 * dt # artificially increase the timestep, but not as dt_new dictates (that increase would dictate dt_new = inf for when errors = 0)
                 dt = dt_new
                 results.append(RKF4)
-                vec = RKF4 # for next iteration of the while-loop
-            else:
-                if (max_from_scalederrors_at_this_step == 0.0): # it's perfect!
-                    steps_accepted += 1
-                    ts.append(t)
-                    t += dt
-                    dt_new = 10 * dt # artificially increase the timestep, but not as dt_new dictates (that increase would dictate dt_new = inf for when errors = 0)
-                    dt = dt_new
-                    results.append(RKF4)
-                    vec = RKF4
-                else: # means that max_from_scalederrors_at_this_step > epsilon_0 and max_from_scalederrors_at_this_step != 0
-                    # no, step not accepted. reiterate step using a lower timestep
-                    dt_new = beta * dt * (epsilon_0/max_from_scalederrors_at_this_step)**(0.2)
-                    if (dt_new < 0.01 * dt): # dt_new is really really small
-                        dt_new = 0.01 * dt
-                    dt = dt_new
-        print("we exited the while-loop!")
-        ts = np.array(ts)
-        results = np.array(results) # all the integration timesteps laid down vertically. x,y,z, ux,uy,uz laid down horizontally across each line (across each integration timestep)
-        return no_of_particles_which_haveexitB, no_of_particles_which_hitelectrode, results[-1, :] # these results are from when: 1) particle has just hit bottom detector OR 2) particle has just exited the fields region at z = l_B
-        # returned results[-1, :] is shape (6,)
+                vec = RKF4
+            else: # means that max_from_scalederrors_at_this_step > epsilon_0 and max_from_scalederrors_at_this_step != 0
+                # no, step not accepted. reiterate step using a lower timestep
+                dt_new = beta * dt * (epsilon_0/max_from_scalederrors_at_this_step)**(0.2)
+                if (dt_new < 0.01 * dt): # dt_new is really really small
+                    dt_new = 0.01 * dt
+                dt = dt_new
+    print("we exited the while-loop!")
+    ts = np.array(ts)
+    results = np.array(results) # all the integration timesteps laid down vertically. x,y,z, ux,uy,uz laid down horizontally across each line (across each integration timestep)
+    return no_of_particles_which_haveexitB, no_of_particles_which_hitelectrode, results[-1, :] # these results are from when: 1) particle has just hit bottom detector OR 2) particle has just exited the fields region at z = l_B
+    # returned results[-1, :] is shape (6,)

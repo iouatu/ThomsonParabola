@@ -1,3 +1,19 @@
+""" This file contains classes definitions for a few design aspects of the detector geometry.
+
+The Fields Class which has as attributes (apart from the name) 
+the strength of the field, 
+the length over which it's active, 
+and the drifting length (in free space) after the field finished to be non-zero.
+
+The Electrode class is helpful to check if clipping occurs during the particles flight in the detector.
+Has as an attribute the y-coordinate of the bottom electrode (in a geometry where the E-field is along positive y-direction)
+
+The Detector_Screen class is there to simulate a passive detector on which particles are collected.
+It has as an attribute the z-coordinate (measured from the source (z=0)) of the detector screen object.
+
+The create_Geometry_Objects() function helps translating user-input to actual geometrical objects and fields in the simulation.
+"""
+
 class Field:
     def __init__(self, name, strength, l, D):
         self._name = name # protected attribute (proceeded by _).

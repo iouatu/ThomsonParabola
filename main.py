@@ -1,5 +1,3 @@
-# import sys
-# print(sys.path)
 import Species, Geometry, utility_fns, databases, RKint # why not from TS_mypkg import ... ? <--- gives ERROR
 import numpy as np
 from matplotlib import pyplot as plt
@@ -9,7 +7,7 @@ all_possible_names = databases.all_possible_names
 masses = databases.masses
 charges = databases.charges
 """
-# geometry explanation: initial velocity of particles along z axis.
+# Geometry explanation: initial velocity of particles along z axis.
 # E and B fields parallel one to each other and oriented along positive y direction.
 # Both E and B fields stop (instantly go to 0 value) at same z location, denoted by l_B below.
 # Both E and B fields are constant and not influenced in any way by the passing, moving, particles.
@@ -25,7 +23,7 @@ charges = databases.charges
 # Option 2 allows to interacetively select an aperture which is non-pointlike only along X or only along Y, or along both directions (thus 3 different possibilities if option 2 is chosen)
 """
 
-def dictated_by_1(no_of_parts, input_MeVs):
+def dictated_by_1(no_of_parts, input_MeVs, opt1_velosopt_value):
     """  Method to return initial conditions for a chunk of particles inputted using option 1.
 
     Returns 2 things:
@@ -37,18 +35,34 @@ def dictated_by_1(no_of_parts, input_MeVs):
     ----------
     no_of_parts : int (how many particles of a given species to deal with)
     input_MeVs : float (mean KEnergy, in MeVs)
+    opt1_velosopt_value : int (0, 1, 2, or 3)
+
 
     Returns
     -------
     list of len 1, np.array shape (no_of_parts, )
     """
 
-    mean_uz_init = utility_fns.from_KEineV_to_uzinit(input_MeVs * (10**6))
-    initial_uzs = Species.Source('Source_for_1', np.array([mean_uz_init, mean_uz_init/10.0]), no_of_parts).draw_from_Gaussian() # a numpy array shape (no_of_parts, )
-    initial_coords = np.array([0.0, 0.0, 0.0]) # x, y, z
-    return [initial_coords], initial_uzs
+    uz_init = utility_fns.from_KEineV_to_uzinit(input_MeVs * (10**6))
 
-def dictated_by_2(no_of_parts, input_MeVs, Xtrue, Ytrue): # dispersion due to aperture for fixed incident MeV energy
+    if (opt1_velosopt_value == 1): # return same velocity for all particles
+        initial_uzs = np.empty( (no_of_parts,) )
+        initial_uzs.fill(uz_init)
+    elif (opt1_velosopt_value == 2): # draw from a gaussian
+        initial_uzs = Species.Source('Source_for_1', np.array([uz_init, uz_init/10.0]), no_of_parts).draw_from_Gaussian() # a numpy array shape (no_of_parts, )
+    elif(opt1_velosopt_value == 3): # get velocities from an input file
+        print("You need to provide the input file! For the moment, I will just return garbage values.")
+        initial_uzs = np.empty( (no_of_parts,) )
+    else:
+        print("I cannot get the initial velocities of the particles from this chunk because the sub-option introduced differs from 0, 1, or 2. I will just return random values (garbage in Python)")
+        initial_uzs = np.empty( (no_of_parts,) )
+
+    initial_coords = np.array([0.0, 0.0, 0.0]) # x, y, z
+
+    return [initial_coords], initial_uzs # initial coords is a np.array shape (3,), initial_uzs is shape (no_of_parts, )
+
+
+def dictated_by_2(no_of_parts, input_MeVs, Xtrue, Ytrue, Rx, Ry, opt2_velosopt_value): # dispersion due to aperture for fixed incident MeV energy
     """  Method to return initial conditions for a chunk of particles inputted using option 2.
 
     Returns 2 things:
@@ -60,6 +74,9 @@ def dictated_by_2(no_of_parts, input_MeVs, Xtrue, Ytrue): # dispersion due to ap
     ----------
     no_of_parts : int (how many particles of a given species to deal with)
     input_MeVs : float (initial KEnergy, in MeV)
+    Rx : float (major (minor) axis of the aperture, in SI units (meters), X-axis)
+    Ry : float (minor (major) axis of the aperture, in SI units (meters), Y-axis)
+    opt2_velosopt_value : int (0, 1, 2, or 3)
 
     Returns
     -------
@@ -70,38 +87,45 @@ def dictated_by_2(no_of_parts, input_MeVs, Xtrue, Ytrue): # dispersion due to ap
     want_aperture_notpointlike_along_y = Ytrue
 
     uz_init = utility_fns.from_KEineV_to_uzinit(input_MeVs * (10**6))
-    # print("inside dictated_by_2 uz_init is:")
-    # print(uz_init)
-    initial_uzs = np.empty( (no_of_parts,) ) # shape (no_of_parts, ), same float in all the no_of_parts locations of the array
-    initial_uzs.fill(uz_init)
-    # print("inside dictated_by_2 initial_uzs is: ")
-    # print(initial_uzs)
+    
+    if (opt2_velosopt_value == 1):
+        initial_uzs = np.empty( (no_of_parts,) ) # shape (no_of_parts, ), same float in all the no_of_parts locations of the array
+        initial_uzs.fill(uz_init)    
+    elif (opt2_velosopt_value == 2):
+        initial_uzs = Species.Source('Source_for_2_2', np.array([uz_init, uz_init/10.0]), no_of_parts).draw_from_Gaussian() # returns a np array shape (self._no_of_parts, )
+    elif (opt2_velosopt_value == 3):
+        print("need to provide the input file")
+        initial_uzs = np.empty( (no_of_parts,) ) # garbage values
+
     if (want_aperture_notpointlike_along_x == True and want_aperture_notpointlike_along_y == False):
-        initial_xs = np.random.uniform(0, 1, no_of_parts) * 0.01 # aperture has radius 0.005 m = 0.5 cm. top x = 0. , bottom x = 0.01 m, center x = 0.005m
+        initial_xs = np.random.uniform(0, 1, no_of_parts) * Rx # aperture has radius 0.005 m = 0.5 cm. top x = 0. , bottom x = 0.01 m, center x = 0.005m
         initial_ys = np.zeros(no_of_parts)
     elif (want_aperture_notpointlike_along_x == False and want_aperture_notpointlike_along_y == True):
-        initial_ys = np.random.uniform(0, 1, no_of_parts) * 0.01 # aperture has radius 0.005 m = 0.5 cm. top y = 0. , bottom y = 0.01 m, center y = 0.005m
+        initial_ys = np.random.uniform(0, 1, no_of_parts) * Ry # aperture has radius 0.005 m = 0.5 cm. top y = 0. , bottom y = 0.01 m, center y = 0.005m
         initial_xs = np.zeros(no_of_parts)
     elif (want_aperture_notpointlike_along_x == True and want_aperture_notpointlike_along_y == True):
-        initial_xs = np.random.uniform(0, 1, no_of_parts) * 0.01 # aperture has radius 0.005 m = 0.5 cm. top coord = 0. , bottom coord = 0.01 m, center coord = 0.005m
-        initial_ys = np.random.uniform(0, 1, no_of_parts) * 0.01 
-    
+        initial_xs = np.random.uniform(0, 1, no_of_parts) * Rx # aperture has radius 0.005 m = 0.5 cm. top coord = 0. , bottom coord = 0.01 m, center coord = 0.005m
+        initial_ys = np.random.uniform(0, 1, no_of_parts) * Ry
     
     return [initial_xs, initial_ys] , initial_uzs
     #initial_coords_container = []
     #initial_coords_container.append([0.0, 0.0, initial_xs[i]] for i in range(no_of_parts))
 
-def get_particles_init_conds(no_of_parts, input_MeV, what_you_want_to_do, Xtrue, Ytrue):
-    """ This function is used to return initial x,y,z coordinates of the particles and initial velocities along z-axis of the particles from a given chunk.
+def get_particles_init_conds(no_of_parts, input_MeV, what_you_want_to_do, Xtrue, Ytrue, Rx, Ry, opt1_velosopt_value, opt2_velosopt_value):
+    """ This function is used to return initial x,y,z coordinates of the particles and initial velocities along z-axis of the particles FROM A GIVEN CHUNK.
     
     Given how many particles of a given species you simulate, their initial KEnergy (mean or fixed, depending on option choice), the option choice (and if option is 2, aperture type)
     it returns the particles x,y,z initial coordinates and their initial velocity along z-axis.
 
-    If option is 1, it considers a pointlike aperture and x = y = z = 0.0 (exactly) and velocities are drawn from a Gaussian distribution with mean
-    equal to the input parameter input_MeV and sigma = mean / 10.
-    If option is 2, it considers a non-pointlike aperture along either x and OR y 
-    (of radius R = 0.005 m when both x-y behaviour is taken into account, of length = 0.005 m when only x or y behaviour is taken into account)
-    and velocities along z-axis are all the same and equal to conversion(input_MeV) m/s.
+    # If option is 1, it considers a pointlike aperture so x = y = z = 0.0 (exactly) and velocities are all equal and derived from input_MeV (option 1_1)
+    or are drawn from a Gaussian distribution with mean equal to the input parameter input_MeV and sigma = mean / 10 (option 1_2)
+    or come from an input file (option 1_3).
+
+    # If option is 2, it considers a non-pointlike aperture along either x and OR y 
+    (of radii Rx, Ry m when both x-y behaviour is taken into account, or length = Rx or Ry when only x or y behaviour is taken into account)
+    and velocities along z-axis are all the same and equal to conversion(input_MeV) (option 2_1) 
+    or are drawn from a Gaussian Distr with mean and sigma=mean/10 (option 2_2)
+    or come from an input file (option 2_3).
 
     Parameters
     ----------
@@ -110,18 +134,22 @@ def get_particles_init_conds(no_of_parts, input_MeV, what_you_want_to_do, Xtrue,
     what_you_want_to_do : int (either 1 or 2 at the moment)
     Xtrue : bool ()
     Ytrue : bool ()
+    Rx : float (major (minor) axis of the aperture, in SI units (meters)). only used in this function if option was chosen to be 2 for this chunk.
+    Ry : float (minor (major) axis of the aperture, in SI units (meters)). only used in this function if option was chosen to be 2 for this chunk.
+    opt1_velosopt_value : int (0, 1, 2 or 3)
+    opt2_velosopt_value : int (0, 1, 2 or 3)
 
     Returns
     -------
     list of len 1 or 2, np.array shape (no_of_parts, )
     """
 
-    if (what_you_want_to_do == 1): # varying incident MeV energy, same species, aperture is pointlike (xinit = yinit = zinit = 0.0)
-        initial_coords, initial_uzs = dictated_by_1(no_of_parts, input_MeV) # initial_coords is a list of 3 floats
+    if (what_you_want_to_do == 1): # aperture is pointlike (xinit = yinit = zinit = 0.0), no aperture effects considered.
+        initial_coords, initial_uzs = dictated_by_1(no_of_parts, input_MeV) # returned initial_coords is a list of 3 floats
         return initial_coords, initial_uzs # initial coords is a list of len 1. initial_uzs is np.array of shape (no_of_parts, )
     else:
-        if (what_you_want_to_do == 2): # fixed input energy, want to see the spread on the detector screen 
-            initial_coords, initial_uzs = dictated_by_2(no_of_parts, input_MeV, Xtrue, Ytrue)
+        if (what_you_want_to_do == 2): # aperture effects are considered. can get velocities from conversion(input_MeV) or to draw from Gaussian or to get them from input file.
+            initial_coords, initial_uzs = dictated_by_2(no_of_parts, input_MeV, Xtrue, Ytrue, Rx, Ry, opt1_velosopt_value, opt2_velosopt_value)
             return initial_coords, initial_uzs # initial coords is a list of len 2. initial_uzs is np.array of shape (no_of_parts, )
         else:
             print("say again what you want to do?")
@@ -172,6 +200,24 @@ def create_Species_Objects(name, mass, charge, r, velo, no_of_particles, dict_to
     return dict_to_put_in
 
 def main():
+    """ Function called at the execution of the code via $ python3 main.py
+
+    Inputs from user from keyboard:
+    -------------------------------
+    E : float (E-field value in SI units (V/m))
+    B : float (B-field value in SI units (T))
+    l_E : float (length in SI units (meters) along z-axis across which E-field value is non-zero), made equal to l_B in the code
+    D_E : float (length in SI units (meters) along z-axis from the end of the E-field to the detector screen), made equal to D_B in the code
+    z_det : float (z coordinate (measured from the aperture, i.e. from the origin) in SI units (meters) at which the detector screen in placed)
+    y_electrode_bottom : float (y coordinate of the bottom electrode. helpful to see if clipping occurs or not)
+    various info about the chunks of particles : various types, see below
+
+    Returns
+    -------------------------
+    final_coords_at_detectorscreen : list of dictionaries. each dictionary represents one chunk of particles. 
+                                     each dictionary contains the x,y coordinates on the detector screen for the particles from that chunk.
+    """
+
     E = float(input("Please enter the fields and geometry details. E = ? [V/m] \n"))
     B = float(input("B = ? [T] \n"))
     l_E = float(input("l_E = ? [m] \n"))
@@ -191,10 +237,11 @@ def main():
     yscal_maxvalues = np.array([10.0, 0.01, 0.2]) # max values for x, y, z of a particle during it's flight through the E and B fields
 
     counter_chunks_of_input = 0
-    names, no_of_particles, input_MeV, whats, apsX, apsY = [], [], [], [], [], []
+    names, no_of_particles, input_MeV, whats, apsX, apsY, opt1_velosopts_container, opt2_velosopts_container, general_velosopts_container = [], [], [], [], [], [], [], [], []
+    contor_what_equal_2 = 0 # helpful not to ask for input from user multiple times if he asked for option2 for at least 1 chunk.
     while (True):
         response = input("Do you want to create another chunk of particles? [Y/N] \n")
-        if (response == "Y"):
+        if (response == "Y" or response == "y"):
             counter_chunks_of_input += 1
             name = input("Species Name? can only choose from (careful not to introduce typos!): [proton; C0+...6+; Xe0+...54+] \n")
             if name in all_possible_names:
@@ -203,21 +250,24 @@ def main():
             else:
                 print("Error: You introduced a wrong name of Species. ABORT")
                 break
-            number_of_particles = int(input("How many {} ? \n".format(name)))
+            number_of_particles = int(input("How many {}s ? \n".format(name)))
             no_of_particles.append(number_of_particles)
             input_energy = float(input("Initial KEnergy in MeV ? \n"))
             input_MeV.append(input_energy)
-            what = float(input("What do you want to do with this chunk of particles? [1/2] \n"))
+            what = int(input("What do you want to do with this chunk of particles? [1/2] \n"))
             whats.append(what)
-            if (what == 2):
+            if (what == 2): # if you want to consider aperture effects for this chunk
+                contor_what_equal_2 += 1
                 aperture_nonpoint_alongX = input("Do you want the aperture to be NON-pointlike along X? [Y/N] \n")
                 condX = True
                 while (condX):
-                    if aperture_nonpoint_alongX == 'Y':
+                    if (aperture_nonpoint_alongX == 'Y' or aperture_nonpoint_alongX == 'y'):
                         aperture_nonpoint_alongX = True
                         apsX.append(aperture_nonpoint_alongX)
+                        if (contor_what_equal_2 == 1): # only happens for the first chunk of particles which requests aperture effects
+                            Rx = float(input("Aperture radius R in meters for X-axis? [non-zero, positive value needed] \n"))
                         condX = False
-                    elif aperture_nonpoint_alongX == 'N':
+                    elif (aperture_nonpoint_alongX == 'N' or aperture_nonpoint_alongX == 'n'):
                         aperture_nonpoint_alongX = False
                         apsX.append(aperture_nonpoint_alongX)
                         condX = False
@@ -228,32 +278,60 @@ def main():
                 aperture_nonpoint_alongY = input("Do you want the aperture to be NON-pointlike along Y? [Y/N] \n")
                 condY = True
                 while(condY):
-                    if aperture_nonpoint_alongY == 'Y':
+                    if (aperture_nonpoint_alongY == 'Y' or aperture_nonpoint_alongY == 'y'): # only happens for the first chunk of particles which requests aperture effects
                         aperture_nonpoint_alongY = True
                         apsY.append(aperture_nonpoint_alongY)
+                        if (contor_what_equal_2 == 1): # else Ry already set, as for the X-radius of the aperture
+                            Ry = float(input("Aperture radius R in meters for Y-axis? [non-zero, positive value needed] \n"))
                         condY = False
-                    elif aperture_nonpoint_alongY == 'N':
+                    elif (aperture_nonpoint_alongY == 'N' or aperture_nonpoint_alongY == 'n'):
                         aperture_nonpoint_alongY = False
                         apsY.append(aperture_nonpoint_alongY)
                         condY = False
                     else:
                         print("wrong answer for Y-direction aperture type")
                         aperture_nonpoint_alongY = input("Do you want the aperture to be NON-pointlike along Y? [Y/N] \n")
-            else: # what == 1
+                # for what = 2 , where do you want velocities to come from?
+                opt2_velosopt = int(input("How do you want to deal with this chunks' incident particles' velocities? [1/2/3] \n"))
+                condopt2velos = True
+                while (condopt2velos):
+                    if (opt2_velosopt == 1 or opt2_velosopt == 2 or opt2_velosopt == 3):
+                        opt2_velosopts_container.append(opt2_velosopt)
+                        general_velosopts_container.append(opt2_velosopt)
+                        condopt2velos = False
+                    else:
+                        print("Invalid response for velocities distribution behaviour. Try again. \n")
+                        opt2_velosopt = int(input("How do you want to deal with this chunks' incident particles' velocities? [1/2/3] \n"))
+                    
+            else: # what = 1, it seems you don't want aperture effects.
+                Rx = 0.0
+                Ry = 0.0
                 apsX.append(False)
                 apsY.append(False) 
+                # for what = 1, where do you want the velocities to come from?
+                opt1_velosopt = int(input("How do you want to deal with this chunks' incident particles' velocities? [1,2,3] \n"))
+                condopt1velos = True
+                while (condopt1velos):
+                    if (opt1_velosopt == 1 or opt1_velosopt == 2 or opt1_velosopt == 3):
+                        opt1_velosopts_container.append(opt1_velosopt)
+                        general_velosopts_container.append(opt1_velosopt)
+                        condopt1velos = False # to allow exiting the while-loop
+                    else:
+                        print("Invalid response for velocities distribution behaviour. Try again. \n")
+                        opt1_velosopt = int(input("How do you want to deal with this chunks' incident particles' velocities? [1/2/3] \n"))
         else:
-            if(response == "N"): # user doesn't want any other chunks of particles
+            if(response == "N" or response == "n"): # user doesn't want any other chunks of particles. break
                 break # go out of the while-loop and continue executing instructions appearing after the while-loop.
             else:
                 print("invalid response! try again!")
                 continue
+    title_of_graph = input("Please specify under which name you want to save results at detector screen. The graph will be saved as a .pdf in the current directory. \n")
 
     list_of_dicts_containing_Species_Objs = []
-    for j in range(counter_chunks_of_input): # for each chunk of 1000 (say) particles
-        initial_coords, initial_uzs  = get_particles_init_conds(no_of_particles[j], input_MeV[j], whats[j], apsX[j], apsY[j]) # both arguments are coming from user-input
-        # initial_coords has either len = 1 or len = 2, depending on which option you selected.
-        # initial_uzs is a np.array shape (no_of_particles, ). it can be populated with same float, OR with floats extracted from a Gaussian. This depends on which option you choose.
+    for j in range(counter_chunks_of_input): # for each chunk of 1000 (say) particles, j counts the chunk of particle at which we are at.
+        initial_coords, initial_uzs  = get_particles_init_conds(no_of_particles[j], input_MeV[j], whats[j], apsX[j], apsY[j], Rx, Ry, opt1_velosopts_container[j], opt2_velosopts_container[j]) # both arguments are coming from user-input
+        # initial_coords has either len = 1 or len = 2, depending on which option you selected (1 or 2).
+        # initial_uzs is a np.array shape (no_of_particles, ). it can be populated with same float, OR with floats extracted from a Gaussian. This depends on which sub-option you chose.
         Species_Objs_dict = dict() # for this current chunk of 1000 (say) particles
         print(initial_uzs)
         Species_Objs_dict = create_Species_Objects(names[j], masses[names[j]], charges[names[j]], initial_coords, initial_uzs, no_of_particles[j], Species_Objs_dict)
@@ -265,7 +343,7 @@ def main():
         results = [] # for this chunk of particles
         coords_at_detector_forthischunk_all = [] # for this chunk of particles
         for j in range(len(list_of_dicts_containing_Species_Objs[k].keys())): # for each particle out of this chunk
-        # push each particle
+        # push each particle from this chunk
             parti_obj = list_of_dicts_containing_Species_Objs[k]['particle_%d'%(j+1)]
             exited_B, hit_E, results_for_this_part = RKint.RK45integrator(parti_obj.x, parti_obj.y, parti_obj.z, parti_obj.ux, parti_obj.uy, parti_obj.uz, yscal_maxvalues, l_B, y_bottom_elec, parti_obj._qonm, E, B )
             if (exited_B == 1 and hit_E == 0 ):
@@ -279,11 +357,15 @@ def main():
                     print("it hit the electode and it didn't exit the B-field!")
                 continue # go to next j, i.e. next iteration of this for-loop, i.e. to the next particle of this chunk of particles. don't push particle to screen anymore, it's stuck in the E/B fields
             coords_at_detector_forthischunk_all.append(coords_at_detector) # coords_at_detector is a numpy array of shape (2,)
+            if ((j+1) % 200 == 0):
+                print("I finished processing {} particles out of a total of {} particles from this chunk.".format(j+1, len(list_of_dicts_containing_Species_Objs[k].keys())))
         coords_at_detector_forthischunk_all = np.array(coords_at_detector_forthischunk_all) # will be shape (no_of_particles-bad_particles, 2), where no_of_particles is for this particular chunk of particles and bad_particles is again for this particular chunk (the ones which hit the bottom electrode or did not exit B-field)
         # print(coords_at_detector_forthischunk_all.shape)
         final_coords_at_detectorscreen.append( {name_of_particles_from_chunk : coords_at_detector_forthischunk_all} )
+        print("We finished processing chunk number {} out of a total of {} chunks of particles.".format(k+1, len(list_of_dicts_containing_Species_Objs)))
  
     # plotting:
+    print("We start plottign now! Please wait ... ")
     colors = iter(cm.rainbow(np.linspace(0,1, len(final_coords_at_detectorscreen)))) # if you have many chunks of particles (many species), this helps select 1 DIFFERENT color to represent each chunk. 
 
     plt.figure()
@@ -293,11 +375,14 @@ def main():
         for key in final_coords_at_detectorscreen[j]: # this for-loop will only make 1 iteration as the dictionary final_coords_at_detectorscreen[j] has 1 key only
             value_from_that_key = final_coords_at_detectorscreen[j][key]
             plt.scatter(value_from_that_key[:, 0], value_from_that_key[:, 1] , s=0.2, label=key, c=c) # key is a str
-    plt.title("Detector screen picture showing the captured ions.")
+    if (whats[0] == 1):
+        plt.title("Detector screen picture showing the captured ions. \n" + " Input energies in MeV = {} \n".format(input_MeV) + "Species = {} \n".format(names) + "Options chosen = {} ".format(whats) + "Sub-options chosen = {} \n".format(general_velosopts_container) + "Number of simulated particles = {}".format(no_of_particles))
+    elif (whats[0] == 2):
+        plt.title("Detector screen picture showing the captured ions. \n" + " Input energies in MeV = {} \n".format(input_MeV) + "Species = {} \n".format(names) + "Options chosen = {}".format(whats) + "Sub-options chosen = {} \n".format(general_velosopts_container)  + "Aperture size(s): Rx = {} m, Ry = {} m \n".format(Rx, Ry) + "Number of simulated particles = {}".format(no_of_particles))
     plt.xlabel("deflection along x axis [meters]")
     plt.ylabel("deflection along y axis [meters]")
     plt.legend()
-    plt.savefig("detector_screen.pdf", bbox_inches='tight')
+    plt.savefig("{}.pdf".format(title_of_graph), bbox_inches='tight')
 
 if __name__ == '__main__':
     main()
