@@ -11,6 +11,14 @@ This design of the spectrometer can be found in "**D. Jung et al., Development o
 
 Thus the **E** and **B** fields are parallel and both oriented along **y** axis, in the positive direction. The fields are a top-hat shape as a function of the z-coordinate, so no fringe-fields effects are considered.
 
+The defining lengths are:
+
+* the lengths over which the E and B fields are non-zero, ```l_E``` and ```l_B```, equal to each other. User asked for input for ```l_E``` only.
+* the free-particle flight lengths (drift lengths) ```D_E``` and ```D_B```. These measure the distance along the z-axis from the end of the E and B fields respectively, to the detector screen position. ```D_E``` and ```D_B``` are equal to each other and the user is asked for input for ```D_E``` only.
+* the z-coordinate of the detector screen ```z_det```, relative to the origin of coordinates (i.e. the aperture z-coordinate). User is asked for input for ```z_det```.
+* the y-coordinate of the bottom electrode ```y_bottom_elec```, relative to the origin of coordinates (i.e. the aperture y-coordinate). User is asked for input for ```y_bottom_elec```.
+
+
 # Aperture
 The incident particles come towards an aperture with initial velocity oriented along **z** axis only (positive initial velocities). 
 
@@ -73,10 +81,10 @@ In that plot, each color represents a different chunk of particles.
 
 
 # Results and plotting
-The end of `main()` inside `main.py` can be changed as needed in order to perform the plotting you want.
+The end of `main()` inside `main.py` can be changed as needed in order to perform the plotting the user wants.
 
 # Examples of usage of the code
-Can be found in the Jupyter Notebooks 
+The usage of the code is straightforward and the input requested from the user is self-explanatory if the geometry picture is kept in mind (at hand up until becoming familiarized with the notation).
 
 # Dependencies
 The code has been tested on **Python 3.8.5** with the following dependencies:
