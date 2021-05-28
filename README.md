@@ -80,6 +80,27 @@ The integration, for each particle, finishes when:
 2) The particle has hit the bottom electrode (see geometry diagram) (has `y` > `y_bottom_elec`)
 3) The number of iterations of the integration while-loop has reached nmax (usually a large number which is not attained in practice if the Physics is chosen in a sensible way).
 
+**Details about the tolerance parameter**
+
+The tolerance parameter ```tol``` from ```RKint.RK45integrator``` function, asked as user-input for each chunk of particles has the following meaning: it is the maximum relative error for the current timestep. 
+
+The error, for each dependent variable (6 such variables in total, but errors only calculated for x,y,z coordinates in this code) is calculated as:
+
+* get the difference between the 4-th order approximation for this current timestep and the 5-th order approximation for this current timestep. This is the estimate of the local truncation error for the current timestep.
+
+* scale the difference to the maximum value of the variable for which the error is calculated. These maximum values are a hyperparameter of the code and at the moment are in SI units, ```(max_x, max_y, max_z) : [10.0, 0.01, 0.2]```.
+
+* compare these scaled differences to the tolerance introduced by the user.
+
+* care is taken for the maximum scaled difference out of all the 3 calculated, because that is the most stringent requirement for whether we advance on step in time or not, given the current 4-th order and 5-th order estimates for the dependent variables.
+
+* thus we get **constant absolute errors relative to some maximum, predefined values.**
+
+How to chose this tolerance ```tol``` is an art in itself and depends on the details of the IVP solved by the RK integrator.
+
+How to chose the ```yscal``` in this case dependds on the detector geometry.
+
+Another option would be to chose to scale the differences to the values of the dependent variables, not to some maximum values of these dependent variables. Then one would get **constant fractional errors.**
 
 ### Ballistic translation
 The code then performs ballistic translation in 3D space towards the detector screen, from the end of the fields to the z-location of the detector screen, denoted by `z_det`.
@@ -105,6 +126,8 @@ The end of `main()` inside `main.py` can be changed as needed in order to perfor
 
 # Examples of usage of the code
 The usage of the code is straightforward and the input requested from the user is self-explanatory if the geometry picture is kept in mind (at hand up until becoming familiarized with the notation).
+
+Pretty good integration behaviour is achieved for tolerances between 10E-20 and 10E-50, but this depends on the initial conditions of the particles shot into the spectrometer.
 
 # Dependencies
 The code has been tested on **Python 3.8.5** with the following dependencies:
