@@ -103,7 +103,7 @@ def get_RKF5_approx_efficiently(t, vec, dt, Ks, qonm, E, B):
 
 #no_of_particles_which_haveexitB = 0
 #no_of_particles_which_havehitelectrode = 0
-def RK45integrator(x,y,z,ux,uy,uz,   yscal, l_B, y_bottom_elec, qonm, E, B):
+def RK45integrator(x,y,z,ux,uy,uz, yscal, tol,  l_B, y_bottom_elec, qonm, E, B):
     """ Integrates the relativistic EOMs for a given particle. 
 
     From given initial coordinates with given initial velocities (6 boundary conditions, sufficient for solving 6 coupled first-order ODE's),
@@ -120,6 +120,8 @@ def RK45integrator(x,y,z,ux,uy,uz,   yscal, l_B, y_bottom_elec, qonm, E, B):
     uz : float (initial velocity of the particle, along z-axis)
 
     yscal : list of 3 floats. contains the maximum values (in modulus) the x,y,z coordinates of the particle can attain in this Physical process at hand. 
+    tol : float (the tolerance: the maximum relative error of the current timestep (relative to the maximum value of the variable inputted in yscal))
+    
     l_B : float (Geometry: the length along which E/B fields extend along z-axis, in SI (meters))
     y_bottom_elec : float (the y-coordinate of the bottom electrode, in SI (meters))
     qonm : float (charge/mass ratio of the particle, in SI (no tricks, just total charge / total mass))
@@ -138,7 +140,8 @@ def RK45integrator(x,y,z,ux,uy,uz,   yscal, l_B, y_bottom_elec, qonm, E, B):
     counter = 0
     nmax = 10**5
     steps_accepted = 0
-    epsilon_0 = 10**(-10)
+    epsilon_0 = tol 
+    # 10**(-50)
     t = 0
     dt = 10**(-50) # initial try for the timestep dt
     ts = []
