@@ -3,10 +3,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import cm # facilitates an easy workflow to have a different color for each curve on the plot at the end
 
-# import os
-# duration = 2  # seconds
-# freq = 440  # Hz
-
 all_possible_names = databases.all_possible_names
 masses = databases.masses
 charges = databases.charges
@@ -215,6 +211,8 @@ def main():
     z_det : float (z coordinate (measured from the aperture, i.e. from the origin) in SI units (meters) at which the detector screen in placed)
     y_electrode_bottom : float (y coordinate of the bottom electrode. helpful to see if clipping occurs or not)
     various info about the chunks of particles : various types, see below
+    tols : list of floats. for each chunk of particle, the relative error tolerance "toler" is saved in the list "tols". "toler" can be different for different chunks of particles.
+
 
     Results whoch can be used at end of script execution.
     -------------------------
@@ -235,7 +233,6 @@ def main():
     l_B = Bfieldobj._l #
     E = Efieldobj._strength
     B = Bfieldobj._strength
-    # did you write the create_Geometry_Objects() function? yes, create_Geometry_Objects() is in Geometry.py
     z_det = detector_obj._z_det
     y_bottom_elec = electrode_bottom_obj._y_electrode
     yscal_maxvalues = np.array([10.0, 0.01, 0.2]) # max values for x, y, z of a particle during it's flight through the E and B fields
@@ -282,6 +279,7 @@ def main():
                     elif (aperture_nonpoint_alongX =='N' or aperture_nonpoint_alongX =='n' or aperture_nonpoint_alongX =='No' or aperture_nonpoint_alongX =='NO'):
                         aperture_nonpoint_alongX = False
                         apsX.append(aperture_nonpoint_alongX)
+                        Rx = 0.0
                         condX = False
                     else:
                         print("wrong answer for X-direction aperture type")
@@ -299,6 +297,8 @@ def main():
                     elif (aperture_nonpoint_alongY == 'N' or aperture_nonpoint_alongY == 'n'):
                         aperture_nonpoint_alongY = False
                         apsY.append(aperture_nonpoint_alongY)
+                        if (contor_what_equal_2 == 1):
+                            Ry = 0.0
                         condY = False
                     else:
                         print("wrong answer for Y-direction aperture type")
@@ -339,7 +339,7 @@ def main():
             else:
                 print("invalid response! try again!")
                 continue
-    title_of_graph = input("Please specify under which name you want to save results at detector screen. It will save a file and plot a graph, both saved with the name you give, in the current directory. \n")
+    title_of_graph = input("Please specify under which name you want to save results at detector screen. It will save a .npz file, a .txt file, and plot 2 graphs, all saved with the name you give, in the current directory. \n")
 
     list_of_dicts_containing_Species_Objs = []
     for j in range(counter_chunks_of_input): # for each chunk of particles, i.e. j counts the chunk of particle at which we are at.
@@ -383,17 +383,19 @@ def main():
     # xx = np.rollaxis(xx, -1) # shall be now shape ()
 
     # saving results to a .npz file
+    # ------------------------------
     np.savez_compressed('{}.npz'.format(title_of_graph), **big_dict)
     list_of_keys= list(big_dict.keys())
     with open("{}.txt".format(title_of_graph), "w") as f:
         f.write("{}.npz\n".format(title_of_graph))
+        f.write("E = {} V/m , B = {} T , l_E = l_B = {} m , z_det = {} m , y_bottom_elec = {} m , Accuracy = {}\n".format(E, B, l_E, z_det, y_bottom_elec, tols))
         for item in list_of_keys:
-            f.write("%s \n" % item)
+            f.write("%s\n" % item)
     
     print("We start plotting now! Please wait ... ")
 
     # plotting in the non-safe way
-    # ----------------------------
+    # -----------------------------
     colors = iter(cm.rainbow(np.linspace(0,1, 2 * len(final_coords_at_detectorscreen)))) # if you have many chunks of particles (many species), this helps select 1 DIFFERENT color to represent each chunk. 
     plt.figure()
     res = np.load('{}.npz'.format(title_of_graph))
@@ -402,8 +404,8 @@ def main():
         c = next(colors)
         c = np.reshape(c, (1, c.shape[0]) )
         plt.scatter(res[key][:, 0], res[key][:, 1], s=0.2, label=key, c=c)
-    plt.xlabel("deflection along x axis [meters]")
-    plt.ylabel("deflection along y axis [meters]")
+    plt.xlabel("Deflection along x axis [meters]")
+    plt.ylabel("Deflection along y axis [meters]")
     plt.title("This graph is plotted just to check that we indeed saved the right things in that .npz file. \n" + " This graph shall agree with the more elaborate one which doesn't contain the non_safe identifier in its name.")
     plt.legend()
     plt.savefig("{}_nonsafe.pdf".format(title_of_graph), bbox_inches='tight')
@@ -421,14 +423,16 @@ def main():
         plt.title("Detector screen picture showing the captured ions. \n" + " Input energies in MeV = {} \n".format(input_MeV) + "Species = {} \n".format(names) + "Options chosen = {} ".format(whats) + "Sub-options chosen = {} \n".format(general_velosopts_container) + "Integration tolerances = {} \n".format(tols) + "E = {} V/m , B = {} T , l_E = l_B = {} m , z_det = {} m \n".format(E, B, l_E, z_det) + "Number of simulated particles = {}".format(no_of_particles))
     elif (whats[0] == 2):
         plt.title("Detector screen picture showing the captured ions. \n" + " Input energies in MeV = {} \n".format(input_MeV) + "Species = {} \n".format(names) + "Options chosen = {}".format(whats) + "Sub-options chosen = {} \n".format(general_velosopts_container)  + "Aperture size(s): Rx = {} m, Ry = {} m \n".format(Rx, Ry) + "Integration tolerances = {} \n".format(tols) + "E = {} V/m , B = {} T , l_E = l_B = {} m , z_det = {} m \n".format(E, B, l_E, z_det) + "Number of simulated particles = {}".format(no_of_particles))
-    plt.xlabel("deflection along x axis [meters]")
-    plt.ylabel("deflection along y axis [meters]")
+    plt.xlabel("Deflection along x axis [meters]")
+    plt.ylabel("Deflection along y axis [meters]")
     plt.legend()
     plt.savefig("{}.pdf".format(title_of_graph), bbox_inches='tight')
 
-    # signal that the script has finished running by playing a short sound on the computer.
+    # signal that the script has finished running by playing a short sound.
+    # import os
+    # duration = 2  # seconds
+    # freq = 440  # Hz
     # os.system('play -nq -t alsa synth {} sine {}'.format(duration, freq)) # Doesn't work on WSL1 on Win10-64bit workstation.
-
 
 if __name__ == '__main__':
     main()
