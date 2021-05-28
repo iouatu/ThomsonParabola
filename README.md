@@ -88,7 +88,7 @@ The error, for each dependent variable (6 such variables in total, but errors on
 
 * get the difference between the 4-th order approximation for this current timestep and the 5-th order approximation for this current timestep. This is the estimate of the local truncation error for the current timestep.
 
-* scale the difference to the maximum value of the variable for which the error is calculated. These maximum values are a hyperparameter of the code and at the moment are in SI units, ```(max_x, max_y, max_z) : [10.0, 0.01, 0.2]```.
+* scale the difference to the maximum value of the variable for which the error is calculated. These maximum values are a hyperparameter of the code and at the moment are in SI units, ```[max_x, max_y, max_z] : [10.0, 0.01, 0.2]```.
 
 * compare these scaled differences to the tolerance introduced by the user.
 
