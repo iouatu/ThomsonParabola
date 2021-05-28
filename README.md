@@ -51,7 +51,7 @@ If the ***option is chosen to be 1***, then the particles are shot towards a pur
 
 * If **suboption is chosen to be 2**: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
 
-* If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user.
+* If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user. Now the code provides garbage values for the velocities, values taken from a np.empty() array.
 
 #### Option 2
 If the ***option is chosen to be 2***, then the particles are shot towards a non-pointlike aperture and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
@@ -60,7 +60,7 @@ If the ***option is chosen to be 2***, then the particles are shot towards a non
 
 * If **suboption is chosen to be 2**: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
 
-* If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user.
+* If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user. Now the code provides garbage values for the velocities, values taken from a np.empty() array.
 
 
 #### Species types
