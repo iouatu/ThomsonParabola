@@ -24,7 +24,7 @@ The incident particles come towards an aperture with initial velocity oriented a
 
 The aperture can be either pointlike or non-pointlike.
 
-If selected to be non-pointlike, it can extend along **x** axis only, along **y** axis only, or along both **x** and **y** axes (so it becomes a circle).
+If selected to be non-pointlike, it can extend along **x** axis only, along **y** axis only, or along both **x** and **y** axes [so it becomes an ellipse (or circle if both inputs are the same)].
 
 The extension in any of the above cases is input from the user from keyboard, in SI units (meters). 
 
@@ -33,32 +33,39 @@ This translates to the fact that particles' initial x and y coordinates at the a
 
 # Particles
 The incident particles are input by the user in an interactive fashion.
+
 They are contained in chunks. A chunk is composed of particles of the same species and can be of any size (integer number of particles in a chunk).
-A chunk is input by the user by specifying its name, its input Kinetic Energy in MeV, the number of particles wanting to be simulated in this chunk, and the option for the aperture.
+
+A chunk is input by the user by specifying its name, its input Kinetic Energy in MeV, the number of particles wanting to be simulated in this chunk, the option for the aperture , the option for how the program handles the generation of the initial velocity of these particles and the integration accuracy.
+
+Integration accuracy has to be specified in scientific notation. Example: 10E-30 or 10E-50 and NOT 10^30 and NOT 10\*\*30 and NOT pow(10,-50).
+
+**To work on this**: cannot input 2 chunks with the same name , i.e. you cannot enter protons at 10 MeV's and protons at 20 MeV's in the same run of the program.
+
 
 #### Option 1
 
 If the ***option is chosen to be 1***, then the particles are shot towards a purely pointlike aperture (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn according to the sub-option chose.
 
-* If suboption is chosen to be 1: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
+* If **suboption is chosen to be 1**: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
 
-* If suboption is chosen to be 2: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
+* If **suboption is chosen to be 2**: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
 
-* If suboption is chosen to be 3 (**not supported yet**): particles' input velocities are read from an input file provided by the user.
+* If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user.
 
 #### Option 2
 If the ***option is chosen to be 2***, then the particles are shot towards a non-pointlike aperture and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
 
-* If suboption is chosen to be 1: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
+* If **suboption is chosen to be 1**: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
 
-* If suboption is chosen to be 2: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
+* If **suboption is chosen to be 2**: in this chunk, particles' velocities are drawn from a Gaussian distribution with mean given by the input initial Kinetic Energy and sigma = mean / 10.
 
-* If suboption is chosen to be 3 (**not supported yet**): particles' input velocities are read from an input file provided by the user.
+* If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user.
 
 
 #### Species types
 
-Chunks can be of the following types (at the moment):
+Chunks of particles can be of the following types (at the moment):
 ```diff
 - [proton, C0+, C1+, ... , C6+, Xe0+, Xe1+, ... , Xe54+]
 ```
@@ -81,6 +88,19 @@ In that plot, each color represents a different chunk of particles.
 
 
 # Results and plotting
+Results (x and y coordinates at detector screen of each particle from each chunk) are saved in a ```.npz``` archive, using the command ```np.savez_compressed()```. 
+
+This is because each chunk of particles can be composed of any number of particles and two chunks can thus potentially have different number of particles. 
+
+Because we are saving x and y coordinates at the detector screen for each particle of the chunk, with chunks of different sizes which are not known at compile-time (but only at run-time, after the user-input), we need to fudge the strict requirements of np.arrays (fixed in size, pre-determined and of known, non-changing, shape) by **saving a dictionary of key-values pairs instead of a 3D ```npy``` tensor**. 
+
+Each key corresponds to a chunk and each value corresponds to a np 2D array of size (no_of_particles_from_this_chunk, 2), where the 2 signifies the x and y coordinates for 1 particle at the detector screen.
+
+To use this saved archive, one must load it and then use part of its contents at a time. This results-usage mechanism is based on a key signifying the name of the chunk of particles for which results are manipulated. 
+
+The list of keys (i.e the names of the introduced chunks) for each program run is saved in a ```.txt``` file at the end of the program run and is used to help reading the ```.npz``` archive as explained above.
+The names of both the ```.npz``` archive and the ```.txt``` file are identical apart from the extension, and are obtained from user input.
+
 The end of `main()` inside `main.py` can be changed as needed in order to perform the plotting the user wants.
 
 # Examples of usage of the code
