@@ -102,8 +102,8 @@ How to chose the ```yscal``` in this case dependds on the detector geometry.
 
 Another option would be to chose to scale the differences to the values of the dependent variables, not to some maximum values of these dependent variables. Then one would get **constant fractional errors.**
 
-### Ballistic translation
-The code then performs ballistic translation in 3D space towards the detector screen, from the end of the fields to the z-location of the detector screen, denoted by `z_det`.
+### Translation
+The code then performs free space translation in 3D towards the detector screen, from the end of the fields to the z-location of the detector screen, denoted by `z_det`.
 When `z_det` is reached, the **x** and **y** coordinates of the particles are recorded and scattered on a x-y scatter plot. 
 In that plot, each color represents a different chunk of particles.
 
