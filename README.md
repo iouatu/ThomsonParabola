@@ -3,9 +3,6 @@
 This simulates a simple **Thomson Ion Parabola Spectrometer** by means of an **adaptive stepsize RK45 Fehlberg integration method** and **OOP design**.
 
 # Geometry
-The simulated geometry is as following:
-
-![Image of ThomsonSpectrometer_MyGeometry](https://github.com/iouatu/ThomsonSpectrometer/blob/main/My_Geometry_picture.png)
 
 This design of the spectrometer can be found in "**D. Jung et al., Development of a high resolution and high dispersion Thomson parabola, Review of Scientific Instruments, 2011**", online at: https://aip.scitation.org/doi/10.1063/1.3523428.
 
