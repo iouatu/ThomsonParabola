@@ -122,7 +122,7 @@ The names of both the ```.npz``` archive and the ```.txt``` file are identical a
 The end of `main()` inside `main.py` can be changed as needed in order to perform the plotting the user wants.
 
 # Examples of usage of the code
-The usage of the code is straightforward and the input requested from the user is self-explanatory if the geometry picture is kept in mind (at hand up until becoming familiarized with the notation).
+The usage of the code is straightforward and the input requested from the user is self-explanatory if the simulated geometry picture is kept in mind.
 
 Pretty good integration behaviour is achieved for tolerances between 10E-20 and 10E-50, but this depends on the initial conditions of the particles shot into the spectrometer.
 
