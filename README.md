@@ -19,7 +19,7 @@ The defining lengths are:
 # Aperture
 The incident particles come towards an aperture with initial velocity oriented along **z** axis only (positive initial velocities). 
 
-The aperture can be either pointlike or non-pointlike.
+The ***aperture can be either pointlike or non-pointlike.***
 
 If selected to be non-pointlike, it can extend along **x** axis only, along **y** axis only, or along both **x** and **y** axes [so it becomes an ellipse (or circle if both inputs are the same)].
 
@@ -42,7 +42,7 @@ Integration accuracy has to be specified in scientific notation. Example: 10E-30
 
 #### Option 1
 
-If the ***option is chosen to be 1***, then the particles are shot towards a purely pointlike aperture (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn according to the sub-option chose.
+If the ***option is chosen to be 1***, then the ***particles are shot towards a purely pointlike aperture*** (initial x, y, z coordinates of all the particles will be identically 0.0 m), with their velocities drawn according to the sub-option chose.
 
 * If **suboption is chosen to be 1**: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
 
@@ -51,7 +51,7 @@ If the ***option is chosen to be 1***, then the particles are shot towards a pur
 * If **suboption is chosen to be 3** (**not supported yet**): particles' input velocities are read from an input file provided by the user. Now the code provides garbage values for the velocities, values taken from a np.empty() array.
 
 #### Option 2
-If the ***option is chosen to be 2***, then the particles are shot towards a non-pointlike aperture and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
+If the ***option is chosen to be 2***, then the ***particles are shot towards a non-pointlike aperture*** and their initial x and y coordinates will be set according to whether the aperture extends along x or along  y or along both axes (see above).
 
 * If **suboption is chosen to be 1**: in this chunk, all particles' velocities are set equal to the velocity value resulted from the conversion ```from_KEineV_to_uzinit(input_KE_expressed_in_eV)```
 
@@ -64,7 +64,7 @@ If the ***option is chosen to be 2***, then the particles are shot towards a non
 
 Chunks of particles can be of the following types (at the moment):
 ```diff
-- [proton, C0+, C1+, ... , C6+, Xe0+, Xe1+, ... , Xe54+]
+- [proton, C0+, C1+, ... , C6+, Xe0+, Xe1+, ... , Xe54+, Ar0+, Ar1+, ..., Ar18+]
 ```
 
 # Integration
